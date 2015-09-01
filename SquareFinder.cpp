@@ -6,8 +6,7 @@
 SquareFinder::SquareFinder(const std::string& map, char valid) :
 valid(valid),
 square(),
-width(0),
-init(true) {
+width(0) {
   this->parseMap(map);
 }
 
@@ -22,48 +21,43 @@ SquareFinder::parseMap(const std::string& map) {
   std::string line;
   unsigned int size = 0;
 
+  std::cout << "Parsing map" << std::endl;
   if (file.is_open()) {
-    this->binaryMatrix.clear();
     while (std::getline(file, line)) {
       if (line.size() == 0 || (size != 0 && line.size() != size))
         throw std::runtime_error("Invalid line length");
       else
         size = line.size();
-      for (const auto& value : line) {
-        this->binaryMatrix.push_back(value == this->valid ? true : false);
-      }
       this->map.emplace_back(line);
     }
+    this->width = size;
     this->data.clear();
-    this->data.resize(this->binaryMatrix.size(), 0);
-    this->init = true;
+    this->data.resize(this->map.size() * this->width);
     file.close();
   }
-  this->width = size;
+  std::cout << "Parsing done" << std::endl;
 }
 
 const SquareFinder::squareUnit&
 SquareFinder::findLargest() {
-  unsigned int height = this->binaryMatrix.size() / this->width;
+  unsigned int height = this->map.size();
   unsigned int idx;
 
-  if (this->binaryMatrix.size() % this->width)
-    ++height;
   for (unsigned int x = 0; x < this->width; ++x) {
-    if (this->square.width == 0 && this->binaryMatrix[x] == 1) {
+    if (this->square.width == 0 && this->map[0][x] == this->valid) {
       this->square.width = 1;
       this->square.x = x;
     }
-    this->data[x] = this->binaryMatrix[x];
+    this->data[x] = (this->map[0][x] == this->valid);
   }
-  std::cout << "wi: " << height << std::endl;
   for (unsigned int y = 0; y < height; ++y) {
-    this->data[y * this->width] = this->binaryMatrix[y * this->width];
+    this->data[y * this->width] = (this->map[y][0] == this->valid);
   }
   for (unsigned int y = 1; y < height; ++y) {
+    idx = y * this->width;
     for (unsigned int x = 1; x < this->width; ++x) {
-      idx = y * this->width + x;
-      if (this->binaryMatrix[idx] == 1) {
+      ++idx;
+      if (this->map[y][x] == this->valid) {
         this->data[idx] = std::min(std::min(this->data[idx - 1], this->data[idx - this->width]),
                                    this->data[idx - this->width - 1]) + 1;
        if (this->square.width < this->data[idx]) {

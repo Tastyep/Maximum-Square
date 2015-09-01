@@ -27,11 +27,9 @@ private:
   void parseMap(const std::string& map);
 
 private:
-  std::vector<bool> binaryMatrix;
   std::vector<unsigned int> data;
   std::vector<std::string> map;
   squareUnit square;
   char valid;
   unsigned int width;
-  bool init;
 };
